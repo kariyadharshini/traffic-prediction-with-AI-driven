@@ -1,0 +1,45 @@
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+
+# 1. Load Data (replace with your actual dataset)
+df = pd.read_csv("traffic_accidents.csv")
+
+# 2. Data Preprocessing
+# Example columns: ['Weather', 'Road_Condition', 'Time', 'Vehicle_Type', 'Accident_Severity']
+df.dropna(inplace=True)
+
+# Convert categorical features to numerical
+df = pd.get_dummies(df, columns=['Weather', 'Road_Condition', 'Time', 'Vehicle_Type'], drop_first=True)
+
+# 3. Define Features and Target
+X = df.drop("Accident_Severity", axis=1)
+y = df["Accident_Severity"]
+
+# 4. Train/Test Split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 5. Train Model
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# 6. Evaluate
+y_pred = model.predict(X_test)
+print("Classification Report:\n", classification_report(y_test, y_pred))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+
+# 7. Feature Importance Plot
+importances = model.feature_importances_
+feat_names = X.columns
+feat_imp = pd.Series(importances, index=feat_names).sort_values(ascending=False)
+
+plt.figure(figsize=(10,6))
+sns.barplot(x=feat_imp[:10], y=feat_imp.index[:10])
+plt.title("Top 10 Feature Importances")
+plt.xlabel("Importance Score")
+plt.ylabel("Feature")
+plt.show()
